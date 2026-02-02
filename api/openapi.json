@@ -1,0 +1,30 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Prefect Server API",
+    "description": "REST API for Prefect Server v3",
+    "version": "3.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4200/api",
+      "description": "Local Prefect Server"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "health_check",
+        "responses": {
+          "200": {
+            "description": "Server is healthy"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}
