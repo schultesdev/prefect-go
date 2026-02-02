@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gregor/prefect-go/pkg/client"
-	"github.com/gregor/prefect-go/pkg/models"
+	"git.schultes.dev/schultesdev/prefect-go/pkg/client"
+	"git.schultes.dev/schultesdev/prefect-go/pkg/models"
 )
 
 func main() {

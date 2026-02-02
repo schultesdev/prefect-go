@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gregor/prefect-go/pkg/errors"
-	"github.com/gregor/prefect-go/pkg/retry"
+	"git.schultes.dev/schultesdev/prefect-go/pkg/errors"
+	"git.schultes.dev/schultesdev/prefect-go/pkg/retry"
 )
 
 const (

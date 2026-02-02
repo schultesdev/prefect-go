@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"git.schultes.dev/schultesdev/prefect-go/pkg/models"
+	"git.schultes.dev/schultesdev/prefect-go/pkg/pagination"
 	"github.com/google/uuid"
-	"github.com/gregor/prefect-go/pkg/models"
-	"github.com/gregor/prefect-go/pkg/pagination"
 )
 
 // FlowsService handles operations related to flows.

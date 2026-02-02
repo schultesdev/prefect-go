@@ -7,7 +7,7 @@ pagination support, and comprehensive error handling.
 
 # Installation
 
-	go get github.com/gregor/prefect-go
+	go get git.schultes.dev/schultesdev/prefect-go
 
 # Quick Start
 
@@ -19,8 +19,8 @@ Create a client and interact with the Prefect API:
 		"context"
 		"log"
 
-		"github.com/gregor/prefect-go/pkg/client"
-		"github.com/gregor/prefect-go/pkg/models"
+		"git.schultes.dev/schultesdev/prefect-go/pkg/client"
+		"git.schultes.dev/schultesdev/prefect-go/pkg/models"
 	)
 
 	func main() {
