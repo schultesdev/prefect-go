@@ -1,4 +1,4 @@
-module github.com/gregor/prefect-go
+module git.schultes.dev/schultesdev/prefect-go
 
 go 1.21
 
