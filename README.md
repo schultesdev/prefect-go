@@ -1,7 +1,7 @@
 # Prefect Go API Client
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/gregor/prefect-go.svg)](https://pkg.go.dev/github.com/gregor/prefect-go)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gregor/prefect-go)](https://goreportcard.com/report/github.com/gregor/prefect-go)
+[![Go Reference](https://pkg.go.dev/badge/git.schultes.dev/schultesdev/prefect-go.svg)](https://pkg.go.dev/git.schultes.dev/schultesdev/prefect-go)
+[![Go Report Card](https://goreportcard.com/badge/git.schultes.dev/schultesdev/prefect-go)](https://goreportcard.com/report/git.schultes.dev/schultesdev/prefect-go)
 
 Ein vollständiger Go-Client für die Prefect v3 Server REST API mit Unterstützung für alle Endpoints, automatischen Retries und Pagination.
 
@@ -18,7 +18,7 @@ Ein vollständiger Go-Client für die Prefect v3 Server REST API mit Unterstütz
 ## Installation
 
 ```bash
-go get github.com/gregor/prefect-go
+go get git.schultes.dev/schultesdev/prefect-go
 ```
 
 ## Quick Start
@@ -31,8 +31,8 @@ import (
     "fmt"
     "log"
 
-    "github.com/gregor/prefect-go/pkg/client"
-    "github.com/gregor/prefect-go/pkg/models"
+    "git.schultes.dev/schultesdev/prefect-go/pkg/client"
+    "git.schultes.dev/schultesdev/prefect-go/pkg/models"
 )
 
 func main() {
@@ -175,7 +175,7 @@ client := client.NewClient(
 Der Client retried automatisch bei transienten Fehlern (5xx, 429):
 
 ```go
-import "github.com/gregor/prefect-go/pkg/retry"
+import "git.schultes.dev/schultesdev/prefect-go/pkg/retry"
 
 retryConfig := retry.Config{
     MaxAttempts:     5,
@@ -242,7 +242,7 @@ Weitere Beispiele finden Sie im [examples/](examples/) Verzeichnis:
 
 ## Dokumentation
 
-Vollständige API-Dokumentation: https://pkg.go.dev/github.com/gregor/prefect-go
+Vollständige API-Dokumentation: https://pkg.go.dev/git.schultes.dev/schultesdev/prefect-go
 
 ## Lizenz
 

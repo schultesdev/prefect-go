@@ -48,5 +48,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial stable release.
 
-[Unreleased]: https://github.com/gregor/prefect-go/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/gregor/prefect-go/releases/tag/v1.0.0
+[Unreleased]: https://git.schultes.dev/schultesdev/prefect-go/compare/v1.0.0...HEAD
+[1.0.0]: https://git.schultes.dev/schultesdev/prefect-go/releases/tag/v1.0.0

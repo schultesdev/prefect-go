@@ -12,7 +12,7 @@ Thank you for your interest in contributing to prefect-go!
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/gregor/prefect-go.git
+git clone https://git.schultes.dev/schultesdev/prefect-go.git
 cd prefect-go
 ```
 
