@@ -31,18 +31,18 @@ type Client struct {
 	userAgent  string
 
 	// Services
-	Flows            *FlowsService
-	FlowRuns         *FlowRunsService
-	Deployments      *DeploymentsService
-	TaskRuns         *TaskRunsService
-	WorkPools        *WorkPoolsService
-	WorkQueues       *WorkQueuesService
-	Variables        *VariablesService
-	Logs             *LogsService
-	Admin            *AdminService
-	BlockTypes       *BlockTypesService
-	BlockSchemas     *BlockSchemasService
-	BlockDocuments   *BlockDocumentsService
+	Flows             *FlowsService
+	FlowRuns          *FlowRunsService
+	Deployments       *DeploymentsService
+	TaskRuns          *TaskRunsService
+	WorkPools         *WorkPoolsService
+	WorkQueues        *WorkQueuesService
+	Variables         *VariablesService
+	Logs              *LogsService
+	Admin             *AdminService
+	BlockTypes        *BlockTypesService
+	BlockSchemas      *BlockSchemasService
+	BlockDocuments    *BlockDocumentsService
 	BlockCapabilities *BlockCapabilitiesService
 }
 
@@ -148,11 +148,16 @@ func WithUserAgent(ua string) Option {
 
 // do executes an HTTP request with retry logic.
 func (c *Client) do(ctx context.Context, method, path string, body, result interface{}) error {
-	// Build full URL
-	u, err := c.baseURL.Parse(path)
+	// Build full URL by joining the base URL path with the service path.
+	// url.URL.Parse() is not used here because it would replace the base path
+	// when the service path is absolute (starts with "/").
+	refURL, err := url.Parse(path)
 	if err != nil {
 		return fmt.Errorf("failed to parse path: %w", err)
 	}
+	u := *c.baseURL
+	u.Path = strings.TrimRight(c.baseURL.Path, "/") + "/" + strings.TrimLeft(refURL.Path, "/")
+	u.RawQuery = refURL.RawQuery
 
 	// Serialize request body if present
 	var reqBody io.Reader
