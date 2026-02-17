@@ -31,15 +31,19 @@ type Client struct {
 	userAgent  string
 
 	// Services
-	Flows       *FlowsService
-	FlowRuns    *FlowRunsService
-	Deployments *DeploymentsService
-	TaskRuns    *TaskRunsService
-	WorkPools   *WorkPoolsService
-	WorkQueues  *WorkQueuesService
-	Variables   *VariablesService
-	Logs        *LogsService
-	Admin       *AdminService
+	Flows            *FlowsService
+	FlowRuns         *FlowRunsService
+	Deployments      *DeploymentsService
+	TaskRuns         *TaskRunsService
+	WorkPools        *WorkPoolsService
+	WorkQueues       *WorkQueuesService
+	Variables        *VariablesService
+	Logs             *LogsService
+	Admin            *AdminService
+	BlockTypes       *BlockTypesService
+	BlockSchemas     *BlockSchemasService
+	BlockDocuments   *BlockDocumentsService
+	BlockCapabilities *BlockCapabilitiesService
 }
 
 // Option is a functional option for configuring the client.
@@ -79,6 +83,10 @@ func NewClient(opts ...Option) (*Client, error) {
 	c.Variables = &VariablesService{client: c}
 	c.Logs = &LogsService{client: c}
 	c.Admin = &AdminService{client: c}
+	c.BlockTypes = &BlockTypesService{client: c}
+	c.BlockSchemas = &BlockSchemasService{client: c}
+	c.BlockDocuments = &BlockDocumentsService{client: c}
+	c.BlockCapabilities = &BlockCapabilitiesService{client: c}
 
 	return c, nil
 }
