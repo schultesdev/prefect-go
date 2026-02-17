@@ -46,24 +46,24 @@ func (s *BlockTypesService) GetBySlug(ctx context.Context, slug string) (*models
 // List retrieves block types with optional filtering.
 func (s *BlockTypesService) List(ctx context.Context, filter *models.BlockTypeFilter, offset, limit int) ([]models.BlockType, error) {
 	type nameFilter struct {
-		Like *string `json:"like_,omitempty"`
+		Like *string `json:"like,omitempty"`
 	}
 	type slugFilter struct {
-		Any []string `json:"any_,omitempty"`
+		Any []string `json:"any,omitempty"`
 	}
 	type blockTypeFilterCriteria struct {
 		Name *nameFilter `json:"name,omitempty"`
 		Slug *slugFilter `json:"slug,omitempty"`
 	}
 	type capabilitiesFilter struct {
-		All []string `json:"all_,omitempty"`
+		All []string `json:"all,omitempty"`
 	}
 	type blockSchemaFilterCriteria struct {
 		Capabilities *capabilitiesFilter `json:"block_capabilities,omitempty"`
 	}
 	type request struct {
 		BlockTypes   *blockTypeFilterCriteria   `json:"block_types,omitempty"`
-		BlockSchemas *blockSchemaFilterCriteria  `json:"block_schemas,omitempty"`
+		BlockSchemas *blockSchemaFilterCriteria `json:"block_schemas,omitempty"`
 		Offset       int                        `json:"offset,omitempty"`
 		Limit        int                        `json:"limit,omitempty"`
 	}

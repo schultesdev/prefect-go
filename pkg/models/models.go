@@ -405,36 +405,251 @@ type BlockDocumentFilter struct {
 	IsAnonymous *bool      // Filter by anonymity
 }
 
+// parseOptionalTime parses a time string, returning nil for empty strings.
+// Supports RFC3339Nano and RFC3339 formats used by the Prefect API.
+func parseOptionalTime(s string) (*time.Time, error) {
+	if s == "" {
+		return nil, nil
+	}
+	t, err := time.Parse(time.RFC3339Nano, s)
+	if err != nil {
+		t, err = time.Parse(time.RFC3339, s)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &t, nil
+}
+
+// optTime handles JSON unmarshaling of nullable time fields that may be
+// represented as empty strings or JSON null by the Prefect API.
+type optTime struct {
+	V *time.Time
+}
+
+func (o *optTime) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		o.V = nil
+		return nil
+	}
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	v, err := parseOptionalTime(s)
+	if err != nil {
+		return err
+	}
+	o.V = v
+	return nil
+}
+
 // UnmarshalJSON implements custom JSON unmarshaling for time fields.
 func (f *Flow) UnmarshalJSON(data []byte) error {
 	type Alias Flow
 	aux := &struct {
-		Created string `json:"created"`
-		Updated string `json:"updated"`
+		Created optTime `json:"created"`
+		Updated optTime `json:"updated"`
 		*Alias
 	}{
 		Alias: (*Alias)(f),
 	}
-
-	if err := json.Unmarshal(data, &aux); err != nil {
+	if err := json.Unmarshal(data, aux); err != nil {
 		return err
 	}
+	f.Created = aux.Created.V
+	f.Updated = aux.Updated.V
+	return nil
+}
 
-	if aux.Created != "" {
-		t, err := time.Parse(time.RFC3339, aux.Created)
-		if err != nil {
-			return err
-		}
-		f.Created = &t
+// UnmarshalJSON implements custom JSON unmarshaling for time fields.
+func (fr *FlowRun) UnmarshalJSON(data []byte) error {
+	type Alias FlowRun
+	aux := &struct {
+		Created                optTime `json:"created"`
+		Updated                optTime `json:"updated"`
+		ExpectedStartTime      optTime `json:"expected_start_time"`
+		NextScheduledStartTime optTime `json:"next_scheduled_start_time"`
+		StartTime              optTime `json:"start_time"`
+		EndTime                optTime `json:"end_time"`
+		*Alias
+	}{
+		Alias: (*Alias)(fr),
 	}
-
-	if aux.Updated != "" {
-		t, err := time.Parse(time.RFC3339, aux.Updated)
-		if err != nil {
-			return err
-		}
-		f.Updated = &t
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
 	}
+	fr.Created = aux.Created.V
+	fr.Updated = aux.Updated.V
+	fr.ExpectedStartTime = aux.ExpectedStartTime.V
+	fr.NextScheduledStartTime = aux.NextScheduledStartTime.V
+	fr.StartTime = aux.StartTime.V
+	fr.EndTime = aux.EndTime.V
+	return nil
+}
 
+// UnmarshalJSON implements custom JSON unmarshaling for time fields.
+func (d *Deployment) UnmarshalJSON(data []byte) error {
+	type Alias Deployment
+	aux := &struct {
+		Created optTime `json:"created"`
+		Updated optTime `json:"updated"`
+		*Alias
+	}{
+		Alias: (*Alias)(d),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	d.Created = aux.Created.V
+	d.Updated = aux.Updated.V
+	return nil
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for time fields.
+func (tr *TaskRun) UnmarshalJSON(data []byte) error {
+	type Alias TaskRun
+	aux := &struct {
+		Created   optTime `json:"created"`
+		Updated   optTime `json:"updated"`
+		StartTime optTime `json:"start_time"`
+		EndTime   optTime `json:"end_time"`
+		*Alias
+	}{
+		Alias: (*Alias)(tr),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	tr.Created = aux.Created.V
+	tr.Updated = aux.Updated.V
+	tr.StartTime = aux.StartTime.V
+	tr.EndTime = aux.EndTime.V
+	return nil
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for time fields.
+func (wp *WorkPool) UnmarshalJSON(data []byte) error {
+	type Alias WorkPool
+	aux := &struct {
+		Created optTime `json:"created"`
+		Updated optTime `json:"updated"`
+		*Alias
+	}{
+		Alias: (*Alias)(wp),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	wp.Created = aux.Created.V
+	wp.Updated = aux.Updated.V
+	return nil
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for time fields.
+func (wq *WorkQueue) UnmarshalJSON(data []byte) error {
+	type Alias WorkQueue
+	aux := &struct {
+		Created optTime `json:"created"`
+		Updated optTime `json:"updated"`
+		*Alias
+	}{
+		Alias: (*Alias)(wq),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	wq.Created = aux.Created.V
+	wq.Updated = aux.Updated.V
+	return nil
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for time fields.
+func (v *Variable) UnmarshalJSON(data []byte) error {
+	type Alias Variable
+	aux := &struct {
+		Created optTime `json:"created"`
+		Updated optTime `json:"updated"`
+		*Alias
+	}{
+		Alias: (*Alias)(v),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	v.Created = aux.Created.V
+	v.Updated = aux.Updated.V
+	return nil
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for time fields.
+func (l *Log) UnmarshalJSON(data []byte) error {
+	type Alias Log
+	aux := &struct {
+		Created optTime `json:"created"`
+		Updated optTime `json:"updated"`
+		*Alias
+	}{
+		Alias: (*Alias)(l),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	l.Created = aux.Created.V
+	l.Updated = aux.Updated.V
+	return nil
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for time fields.
+func (bt *BlockType) UnmarshalJSON(data []byte) error {
+	type Alias BlockType
+	aux := &struct {
+		Created optTime `json:"created"`
+		Updated optTime `json:"updated"`
+		*Alias
+	}{
+		Alias: (*Alias)(bt),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	bt.Created = aux.Created.V
+	bt.Updated = aux.Updated.V
+	return nil
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for time fields.
+func (bs *BlockSchema) UnmarshalJSON(data []byte) error {
+	type Alias BlockSchema
+	aux := &struct {
+		Created optTime `json:"created"`
+		Updated optTime `json:"updated"`
+		*Alias
+	}{
+		Alias: (*Alias)(bs),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	bs.Created = aux.Created.V
+	bs.Updated = aux.Updated.V
+	return nil
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for time fields.
+func (bd *BlockDocument) UnmarshalJSON(data []byte) error {
+	type Alias BlockDocument
+	aux := &struct {
+		Created optTime `json:"created"`
+		Updated optTime `json:"updated"`
+		*Alias
+	}{
+		Alias: (*Alias)(bd),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	bd.Created = aux.Created.V
+	bd.Updated = aux.Updated.V
 	return nil
 }
