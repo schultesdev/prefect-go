@@ -97,6 +97,92 @@ func (s *DeploymentsService) CreateFlowRun(ctx context.Context, id uuid.UUID, pa
 	return &flowRun, nil
 }
 
+// List retrieves a list of deployments with optional filtering.
+func (s *DeploymentsService) List(ctx context.Context, filter *models.DeploymentFilter, offset, limit int) (*pagination.PaginatedResponse[models.Deployment], error) {
+	if filter == nil {
+		filter = &models.DeploymentFilter{}
+	}
+	filter.Offset = offset
+	filter.Limit = limit
+
+	type response struct {
+		Results []models.Deployment `json:"results"`
+		Count   int                 `json:"count"`
+	}
+
+	var resp response
+	if err := s.client.post(ctx, "/deployments/filter", filter, &resp); err != nil {
+		return nil, fmt.Errorf("failed to list deployments: %w", err)
+	}
+
+	return &pagination.PaginatedResponse[models.Deployment]{
+		Results: resp.Results,
+		Count:   resp.Count,
+		Limit:   limit,
+		Offset:  offset,
+		HasMore: offset+len(resp.Results) < resp.Count,
+	}, nil
+}
+
+// ListAll returns an iterator for all deployments matching the filter.
+func (s *DeploymentsService) ListAll(ctx context.Context, filter *models.DeploymentFilter) *pagination.Iterator[models.Deployment] {
+	fetchFunc := func(ctx context.Context, offset, limit int) (*pagination.PaginatedResponse[models.Deployment], error) {
+		return s.List(ctx, filter, offset, limit)
+	}
+	return pagination.NewIterator(fetchFunc, 100)
+}
+
+// Count returns the number of deployments matching the filter.
+func (s *DeploymentsService) Count(ctx context.Context, filter *models.DeploymentFilter) (int, error) {
+	if filter == nil {
+		filter = &models.DeploymentFilter{}
+	}
+
+	var count int
+	if err := s.client.post(ctx, "/deployments/count", filter, &count); err != nil {
+		return 0, fmt.Errorf("failed to count deployments: %w", err)
+	}
+	return count, nil
+}
+
+// GetSchedules retrieves all schedules for a deployment.
+func (s *DeploymentsService) GetSchedules(ctx context.Context, id uuid.UUID) ([]models.DeploymentSchedule, error) {
+	var schedules []models.DeploymentSchedule
+	path := joinPath("/deployments", id.String(), "schedules")
+	if err := s.client.get(ctx, path, &schedules); err != nil {
+		return nil, fmt.Errorf("failed to get deployment schedules: %w", err)
+	}
+	return schedules, nil
+}
+
+// CreateSchedules creates schedules for a deployment.
+func (s *DeploymentsService) CreateSchedules(ctx context.Context, id uuid.UUID, schedules []models.DeploymentScheduleCreate) ([]models.DeploymentSchedule, error) {
+	var result []models.DeploymentSchedule
+	path := joinPath("/deployments", id.String(), "schedules")
+	if err := s.client.post(ctx, path, schedules, &result); err != nil {
+		return nil, fmt.Errorf("failed to create deployment schedules: %w", err)
+	}
+	return result, nil
+}
+
+// UpdateSchedule updates a specific schedule for a deployment.
+func (s *DeploymentsService) UpdateSchedule(ctx context.Context, deploymentID, scheduleID uuid.UUID, req *models.DeploymentScheduleUpdate) error {
+	path := joinPath("/deployments", deploymentID.String(), "schedules", scheduleID.String())
+	if err := s.client.patch(ctx, path, req, nil); err != nil {
+		return fmt.Errorf("failed to update deployment schedule: %w", err)
+	}
+	return nil
+}
+
+// DeleteSchedule deletes a specific schedule from a deployment.
+func (s *DeploymentsService) DeleteSchedule(ctx context.Context, deploymentID, scheduleID uuid.UUID) error {
+	path := joinPath("/deployments", deploymentID.String(), "schedules", scheduleID.String())
+	if err := s.client.delete(ctx, path); err != nil {
+		return fmt.Errorf("failed to delete deployment schedule: %w", err)
+	}
+	return nil
+}
+
 // TaskRunsService handles operations related to task runs.
 type TaskRunsService struct {
 	client *Client
@@ -147,6 +233,64 @@ func (t *TaskRunsService) SetState(ctx context.Context, id uuid.UUID, state *mod
 	return &taskRun, nil
 }
 
+// Update updates a task run.
+func (t *TaskRunsService) Update(ctx context.Context, id uuid.UUID, req *models.TaskRunUpdate) (*models.TaskRun, error) {
+	var taskRun models.TaskRun
+	path := joinPath("/task_runs", id.String())
+	if err := t.client.patch(ctx, path, req, &taskRun); err != nil {
+		return nil, fmt.Errorf("failed to update task run: %w", err)
+	}
+	return &taskRun, nil
+}
+
+// List retrieves a list of task runs with optional filtering.
+func (t *TaskRunsService) List(ctx context.Context, filter *models.TaskRunFilter, offset, limit int) (*pagination.PaginatedResponse[models.TaskRun], error) {
+	if filter == nil {
+		filter = &models.TaskRunFilter{}
+	}
+	filter.Offset = offset
+	filter.Limit = limit
+
+	type response struct {
+		Results []models.TaskRun `json:"results"`
+		Count   int              `json:"count"`
+	}
+
+	var resp response
+	if err := t.client.post(ctx, "/task_runs/filter", filter, &resp); err != nil {
+		return nil, fmt.Errorf("failed to list task runs: %w", err)
+	}
+
+	return &pagination.PaginatedResponse[models.TaskRun]{
+		Results: resp.Results,
+		Count:   resp.Count,
+		Limit:   limit,
+		Offset:  offset,
+		HasMore: offset+len(resp.Results) < resp.Count,
+	}, nil
+}
+
+// ListAll returns an iterator for all task runs matching the filter.
+func (t *TaskRunsService) ListAll(ctx context.Context, filter *models.TaskRunFilter) *pagination.Iterator[models.TaskRun] {
+	fetchFunc := func(ctx context.Context, offset, limit int) (*pagination.PaginatedResponse[models.TaskRun], error) {
+		return t.List(ctx, filter, offset, limit)
+	}
+	return pagination.NewIterator(fetchFunc, 100)
+}
+
+// Count returns the number of task runs matching the filter.
+func (t *TaskRunsService) Count(ctx context.Context, filter *models.TaskRunFilter) (int, error) {
+	if filter == nil {
+		filter = &models.TaskRunFilter{}
+	}
+
+	var count int
+	if err := t.client.post(ctx, "/task_runs/count", filter, &count); err != nil {
+		return 0, fmt.Errorf("failed to count task runs: %w", err)
+	}
+	return count, nil
+}
+
 // WorkPoolsService handles operations related to work pools.
 type WorkPoolsService struct {
 	client *Client
@@ -162,6 +306,61 @@ func (w *WorkPoolsService) Get(ctx context.Context, name string) (*models.WorkPo
 	return &workPool, nil
 }
 
+// Create creates a new work pool.
+func (w *WorkPoolsService) Create(ctx context.Context, req *models.WorkPoolCreate) (*models.WorkPool, error) {
+	var workPool models.WorkPool
+	if err := w.client.post(ctx, "/work_pools/", req, &workPool); err != nil {
+		return nil, fmt.Errorf("failed to create work pool: %w", err)
+	}
+	return &workPool, nil
+}
+
+// Update updates a work pool.
+func (w *WorkPoolsService) Update(ctx context.Context, name string, req *models.WorkPoolUpdate) error {
+	path := joinPath("/work_pools", name)
+	if err := w.client.patch(ctx, path, req, nil); err != nil {
+		return fmt.Errorf("failed to update work pool: %w", err)
+	}
+	return nil
+}
+
+// Delete deletes a work pool by name.
+func (w *WorkPoolsService) Delete(ctx context.Context, name string) error {
+	path := joinPath("/work_pools", name)
+	if err := w.client.delete(ctx, path); err != nil {
+		return fmt.Errorf("failed to delete work pool: %w", err)
+	}
+	return nil
+}
+
+// List retrieves work pools with optional filtering.
+func (w *WorkPoolsService) List(ctx context.Context, filter *models.WorkPoolFilter, offset, limit int) ([]models.WorkPool, error) {
+	if filter == nil {
+		filter = &models.WorkPoolFilter{}
+	}
+	filter.Offset = offset
+	filter.Limit = limit
+
+	var workPools []models.WorkPool
+	if err := w.client.post(ctx, "/work_pools/filter", filter, &workPools); err != nil {
+		return nil, fmt.Errorf("failed to list work pools: %w", err)
+	}
+	return workPools, nil
+}
+
+// Count returns the number of work pools matching the filter.
+func (w *WorkPoolsService) Count(ctx context.Context, filter *models.WorkPoolFilter) (int, error) {
+	if filter == nil {
+		filter = &models.WorkPoolFilter{}
+	}
+
+	var count int
+	if err := w.client.post(ctx, "/work_pools/count", filter, &count); err != nil {
+		return 0, fmt.Errorf("failed to count work pools: %w", err)
+	}
+	return count, nil
+}
+
 // WorkQueuesService handles operations related to work queues.
 type WorkQueuesService struct {
 	client *Client
@@ -175,6 +374,58 @@ func (w *WorkQueuesService) Get(ctx context.Context, id uuid.UUID) (*models.Work
 		return nil, fmt.Errorf("failed to get work queue: %w", err)
 	}
 	return &workQueue, nil
+}
+
+// Create creates a new work queue.
+func (w *WorkQueuesService) Create(ctx context.Context, req *models.WorkQueueCreate) (*models.WorkQueue, error) {
+	var workQueue models.WorkQueue
+	if err := w.client.post(ctx, "/work_queues/", req, &workQueue); err != nil {
+		return nil, fmt.Errorf("failed to create work queue: %w", err)
+	}
+	return &workQueue, nil
+}
+
+// GetByName retrieves a work queue by name.
+func (w *WorkQueuesService) GetByName(ctx context.Context, name string) (*models.WorkQueue, error) {
+	var workQueue models.WorkQueue
+	path := joinPath("/work_queues/name", name)
+	if err := w.client.get(ctx, path, &workQueue); err != nil {
+		return nil, fmt.Errorf("failed to get work queue by name: %w", err)
+	}
+	return &workQueue, nil
+}
+
+// Update updates a work queue.
+func (w *WorkQueuesService) Update(ctx context.Context, id uuid.UUID, req *models.WorkQueueUpdate) error {
+	path := joinPath("/work_queues", id.String())
+	if err := w.client.patch(ctx, path, req, nil); err != nil {
+		return fmt.Errorf("failed to update work queue: %w", err)
+	}
+	return nil
+}
+
+// Delete deletes a work queue by ID.
+func (w *WorkQueuesService) Delete(ctx context.Context, id uuid.UUID) error {
+	path := joinPath("/work_queues", id.String())
+	if err := w.client.delete(ctx, path); err != nil {
+		return fmt.Errorf("failed to delete work queue: %w", err)
+	}
+	return nil
+}
+
+// List retrieves work queues with optional filtering.
+func (w *WorkQueuesService) List(ctx context.Context, filter *models.WorkQueueFilter, offset, limit int) ([]models.WorkQueue, error) {
+	if filter == nil {
+		filter = &models.WorkQueueFilter{}
+	}
+	filter.Offset = offset
+	filter.Limit = limit
+
+	var workQueues []models.WorkQueue
+	if err := w.client.post(ctx, "/work_queues/filter", filter, &workQueues); err != nil {
+		return nil, fmt.Errorf("failed to list work queues: %w", err)
+	}
+	return workQueues, nil
 }
 
 // VariablesService handles operations related to variables.
@@ -228,6 +479,54 @@ func (v *VariablesService) Delete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("failed to delete variable: %w", err)
 	}
 	return nil
+}
+
+// List retrieves a list of variables with optional filtering.
+func (v *VariablesService) List(ctx context.Context, filter *models.VariableFilter, offset, limit int) (*pagination.PaginatedResponse[models.Variable], error) {
+	if filter == nil {
+		filter = &models.VariableFilter{}
+	}
+	filter.Offset = offset
+	filter.Limit = limit
+
+	type response struct {
+		Results []models.Variable `json:"results"`
+		Count   int               `json:"count"`
+	}
+
+	var resp response
+	if err := v.client.post(ctx, "/variables/filter", filter, &resp); err != nil {
+		return nil, fmt.Errorf("failed to list variables: %w", err)
+	}
+
+	return &pagination.PaginatedResponse[models.Variable]{
+		Results: resp.Results,
+		Count:   resp.Count,
+		Limit:   limit,
+		Offset:  offset,
+		HasMore: offset+len(resp.Results) < resp.Count,
+	}, nil
+}
+
+// ListAll returns an iterator for all variables matching the filter.
+func (v *VariablesService) ListAll(ctx context.Context, filter *models.VariableFilter) *pagination.Iterator[models.Variable] {
+	fetchFunc := func(ctx context.Context, offset, limit int) (*pagination.PaginatedResponse[models.Variable], error) {
+		return v.List(ctx, filter, offset, limit)
+	}
+	return pagination.NewIterator(fetchFunc, 100)
+}
+
+// Count returns the number of variables matching the filter.
+func (v *VariablesService) Count(ctx context.Context, filter *models.VariableFilter) (int, error) {
+	if filter == nil {
+		filter = &models.VariableFilter{}
+	}
+
+	var count int
+	if err := v.client.post(ctx, "/variables/count", filter, &count); err != nil {
+		return 0, fmt.Errorf("failed to count variables: %w", err)
+	}
+	return count, nil
 }
 
 // LogsService handles operations related to logs.

@@ -31,19 +31,28 @@ type Client struct {
 	userAgent  string
 
 	// Services
-	Flows             *FlowsService
-	FlowRuns          *FlowRunsService
-	Deployments       *DeploymentsService
-	TaskRuns          *TaskRunsService
-	WorkPools         *WorkPoolsService
-	WorkQueues        *WorkQueuesService
-	Variables         *VariablesService
-	Logs              *LogsService
-	Admin             *AdminService
-	BlockTypes        *BlockTypesService
-	BlockSchemas      *BlockSchemasService
-	BlockDocuments    *BlockDocumentsService
-	BlockCapabilities *BlockCapabilitiesService
+	Flows               *FlowsService
+	FlowRuns            *FlowRunsService
+	Deployments         *DeploymentsService
+	TaskRuns            *TaskRunsService
+	WorkPools           *WorkPoolsService
+	WorkQueues          *WorkQueuesService
+	Variables           *VariablesService
+	Logs                *LogsService
+	Admin               *AdminService
+	BlockTypes          *BlockTypesService
+	BlockSchemas        *BlockSchemasService
+	BlockDocuments      *BlockDocumentsService
+	BlockCapabilities   *BlockCapabilitiesService
+	Artifacts           *ArtifactsService
+	Automations         *AutomationsService
+	Events              *EventsService
+	SavedSearches       *SavedSearchesService
+	ConcurrencyLimits   *ConcurrencyLimitsService
+	ConcurrencyLimitsV2 *ConcurrencyLimitsV2Service
+	TaskWorkers         *TaskWorkersService
+	FlowRunStates       *FlowRunStatesService
+	TaskRunStates       *TaskRunStatesService
 }
 
 // Option is a functional option for configuring the client.
@@ -87,6 +96,15 @@ func NewClient(opts ...Option) (*Client, error) {
 	c.BlockSchemas = &BlockSchemasService{client: c}
 	c.BlockDocuments = &BlockDocumentsService{client: c}
 	c.BlockCapabilities = &BlockCapabilitiesService{client: c}
+	c.Artifacts = &ArtifactsService{client: c}
+	c.Automations = &AutomationsService{client: c}
+	c.Events = &EventsService{client: c}
+	c.SavedSearches = &SavedSearchesService{client: c}
+	c.ConcurrencyLimits = &ConcurrencyLimitsService{client: c}
+	c.ConcurrencyLimitsV2 = &ConcurrencyLimitsV2Service{client: c}
+	c.TaskWorkers = &TaskWorkersService{client: c}
+	c.FlowRunStates = &FlowRunStatesService{client: c}
+	c.TaskRunStates = &TaskRunStatesService{client: c}
 
 	return c, nil
 }
