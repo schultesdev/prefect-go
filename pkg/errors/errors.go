@@ -3,6 +3,7 @@ package errors
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -98,7 +99,12 @@ func NewAPIError(resp *http.Response) error {
 
 	// Try to read and parse the response body
 	if resp.Body != nil {
-		defer resp.Body.Close()
+		defer func(Body io.ReadCloser) {
+			err := Body.Close()
+			if err != nil {
+				return
+			}
+		}(resp.Body)
 		body, err := io.ReadAll(resp.Body)
 		if err == nil && len(body) > 0 {
 			// Try to parse as JSON
@@ -181,7 +187,8 @@ func parseValidationError(apiErr *APIError, detail interface{}) error {
 
 // IsNotFound checks if an error is a 404 Not Found error.
 func IsNotFound(err error) bool {
-	if apiErr, ok := err.(*APIError); ok {
+	var apiErr *APIError
+	if errors.As(err, &apiErr) {
 		return apiErr.IsNotFound()
 	}
 	return false
@@ -189,7 +196,8 @@ func IsNotFound(err error) bool {
 
 // IsUnauthorized checks if an error is a 401 Unauthorized error.
 func IsUnauthorized(err error) bool {
-	if apiErr, ok := err.(*APIError); ok {
+	var apiErr *APIError
+	if errors.As(err, &apiErr) {
 		return apiErr.IsUnauthorized()
 	}
 	return false
@@ -197,7 +205,8 @@ func IsUnauthorized(err error) bool {
 
 // IsForbidden checks if an error is a 403 Forbidden error.
 func IsForbidden(err error) bool {
-	if apiErr, ok := err.(*APIError); ok {
+	var apiErr *APIError
+	if errors.As(err, &apiErr) {
 		return apiErr.IsForbidden()
 	}
 	return false
@@ -205,7 +214,8 @@ func IsForbidden(err error) bool {
 
 // IsRateLimited checks if an error is a 429 Too Many Requests error.
 func IsRateLimited(err error) bool {
-	if apiErr, ok := err.(*APIError); ok {
+	var apiErr *APIError
+	if errors.As(err, &apiErr) {
 		return apiErr.IsRateLimited()
 	}
 	return false
@@ -213,7 +223,8 @@ func IsRateLimited(err error) bool {
 
 // IsServerError checks if an error is a 5xx server error.
 func IsServerError(err error) bool {
-	if apiErr, ok := err.(*APIError); ok {
+	var apiErr *APIError
+	if errors.As(err, &apiErr) {
 		return apiErr.IsServerError()
 	}
 	return false
@@ -221,6 +232,7 @@ func IsServerError(err error) bool {
 
 // IsValidationError checks if an error is a validation error.
 func IsValidationError(err error) bool {
-	_, ok := err.(*ValidationError)
+	var validationError *ValidationError
+	ok := errors.As(err, &validationError)
 	return ok
 }

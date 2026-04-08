@@ -25,7 +25,10 @@ func TestArtifactsService_Create(t *testing.T) {
 			t.Errorf("method = %v, want POST", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(expected)
+		err := json.NewEncoder(w).Encode(expected)
+		if err != nil {
+			return
+		}
 	}))
 	defer server.Close()
 
@@ -50,7 +53,10 @@ func TestArtifactsService_Get(t *testing.T) {
 			t.Errorf("method = %v, want GET", r.Method)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(expected)
+		err := json.NewEncoder(w).Encode(expected)
+		if err != nil {
+			return
+		}
 	}))
 	defer server.Close()
 
@@ -99,7 +105,10 @@ func TestArtifactsService_List(t *testing.T) {
 			"results": []models.Artifact{{ID: uuid.New()}},
 			"count":   1,
 		}
-		json.NewEncoder(w).Encode(resp)
+		err := json.NewEncoder(w).Encode(resp)
+		if err != nil {
+			return
+		}
 	}))
 	defer server.Close()
 
@@ -118,7 +127,10 @@ func TestArtifactsService_List(t *testing.T) {
 func TestArtifactsService_Count(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`5`))
+		_, err := w.Write([]byte(`5`))
+		if err != nil {
+			return
+		}
 	}))
 	defer server.Close()
 
