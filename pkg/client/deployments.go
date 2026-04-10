@@ -105,22 +105,17 @@ func (s *DeploymentsService) List(ctx context.Context, filter *models.Deployment
 	filter.Offset = offset
 	filter.Limit = limit
 
-	type response struct {
-		Results []models.Deployment `json:"results"`
-		Count   int                 `json:"count"`
-	}
-
-	var resp response
-	if err := s.client.post(ctx, "/deployments/filter", filter, &resp); err != nil {
+	var results []models.Deployment
+	if err := s.client.post(ctx, "/deployments/filter", filter, &results); err != nil {
 		return nil, fmt.Errorf("failed to list deployments: %w", err)
 	}
 
 	return &pagination.PaginatedResponse[models.Deployment]{
-		Results: resp.Results,
-		Count:   resp.Count,
+		Results: results,
+		Count:   offset + len(results),
 		Limit:   limit,
 		Offset:  offset,
-		HasMore: offset+len(resp.Results) < resp.Count,
+		HasMore: len(results) == limit,
 	}, nil
 }
 
