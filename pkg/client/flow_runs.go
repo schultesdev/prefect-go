@@ -42,22 +42,17 @@ func (s *FlowRunsService) List(ctx context.Context, filter *models.FlowRunFilter
 	filter.Offset = offset
 	filter.Limit = limit
 
-	type response struct {
-		Results []models.FlowRun `json:"results"`
-		Count   int              `json:"count"`
-	}
-
-	var resp response
-	if err := s.client.post(ctx, "/flow_runs/filter", filter, &resp); err != nil {
+	var results []models.FlowRun
+	if err := s.client.post(ctx, "/flow_runs/filter", filter, &results); err != nil {
 		return nil, fmt.Errorf("failed to list flow runs: %w", err)
 	}
 
 	return &pagination.PaginatedResponse[models.FlowRun]{
-		Results: resp.Results,
-		Count:   resp.Count,
+		Results: results,
+		Count:   offset + len(results),
 		Limit:   limit,
 		Offset:  offset,
-		HasMore: offset+len(resp.Results) < resp.Count,
+		HasMore: len(results) == limit,
 	}, nil
 }
 
