@@ -7,7 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **BREAKING**: `Variable.Value`, `VariableCreate.Value` and `VariableUpdate.Value`
+  are now `json.RawMessage` instead of `string` (`*string` for the update case).
+  Prefect 3.x stores a variable's value as any JSON type - string, integer,
+  number, boolean, object, array or null - so a `string` field could not encode
+  an object or array on write, and failed outright on read with
+  `cannot unmarshal object into Go struct field .Alias.value of type string`.
+
+  Migration:
+
+  ```go
+  // before
+  v := &models.VariableCreate{Name: "cfg", Value: "/data/imports"}
+  s := variable.Value
+
+  // after
+  value, err := models.VariableValue("/data/imports") // or any Go value
+  v := &models.VariableCreate{Name: "cfg", Value: value}
+  s, ok := variable.StringValue() // ok == false unless the value is a JSON string
+  ```
+
+  A nil `VariableUpdate.Value` is omitted from the request as before, leaving the
+  stored value untouched; pass `json.RawMessage("null")` to set it to JSON null.
+
 ### Added
+- `models.VariableValue(any) (json.RawMessage, error)` to encode an arbitrary Go
+  value for a variable.
+- `Variable.StringValue() (string, bool)` to read a variable whose value is a
+  JSON string, reporting `false` for every other JSON type.
+- Tests for the Variables service (`pkg/client/variables_test.go`), covering all
+  JSON value types on read, object and string values on create, and the
+  nil/explicit-null distinction on update.
 - Initial release of prefect-go
 - Complete Prefect Server v3 API client implementation
 - Support for all major resources (Flows, FlowRuns, Deployments, etc.)
